@@ -70,7 +70,7 @@ export const Devnet = ({
     loadData();
   }, []);
 
-  const [isOrganicState, setIsOrganicState] = useState(false);
+  const [isOrganicState, setIsOrganicState] = useState(true);
 
   const getWineDetails = async (botleName) => {
     const contract = new ethers.Contract(contractAddress, ABI.abi, provider);
@@ -244,14 +244,13 @@ export const Devnet = ({
         }
         return prev + 10;
       });
-    }, 30000);
+    }, 3000);
   };
 
   const onSubmit = async (data) => {
-
-      if (nextStep) {
-      await  checkIfOrganic(data.bootleName);
-      } 
+    if (nextStep) {
+      await checkIfOrganic(data.bootleName);
+    }
 
     try {
       simulateEncryption();
@@ -266,8 +265,14 @@ export const Devnet = ({
     await checkIfOrganic(data.bootleName);
   };
   const [publicData, setPublicData] = useState('');
-  return (
-    <div className="container mt-10">
+
+
+  let bodyContent;
+
+
+  if(!isOrganicState) {
+    bodyContent = (
+      <div className="container mt-10">
       <img src="./logo.png" className="mx-auto mb-5" width={300} alt="" />
       <h2 className="flex gap-2 justify-center">
         Register your winerie on Openvino and get
@@ -418,5 +423,19 @@ export const Devnet = ({
         </div>
       )}
     </div>
-  );
+    )
+  }
+
+
+  if(isOrganicState) {	
+    bodyContent = ( <div className='flex justify-center items-center text-xl mt-20 bg-rose-700 min-h-[80vh]'>
+      Your BioDigitalCert is here
+    </div>)
+  }
+
+
+  return (
+  bodyContent
+  )
+
 };
