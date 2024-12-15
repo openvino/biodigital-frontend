@@ -18,7 +18,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
       '@deployments': path.resolve(
         __dirname,
-        '../biodigital-contract/winery-biodigital/deployments',
+        '../hardhat/deployments',
       ),
     },
   },

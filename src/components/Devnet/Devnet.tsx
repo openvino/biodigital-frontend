@@ -70,6 +70,8 @@ export const Devnet = ({
     loadData();
   }, []);
 
+  const [isOrganicState, setIsOrganicState] = useState(false);
+
   const getWineDetails = async (botleName) => {
     const contract = new ethers.Contract(contractAddress, ABI.abi, provider);
 
@@ -91,6 +93,8 @@ export const Devnet = ({
 
     console.log(`Decryption requested for: ${botleName}`);
   };
+
+  const [nextStep, setNextStep] = useState(false);
 
   const getDecryptedIsOrganic = async () => {
     const contract = new ethers.Contract(contractAddress, ABI.abi, provider);
@@ -118,7 +122,11 @@ export const Devnet = ({
 
       const decryptedValue = await getDecryptedIsOrganic();
 
-      console.log(decryptedValue);
+      if (decryptedValue.toString() === '1') {
+        setIsOrganicState(true);
+      } else {
+        setIsOrganicState(false);
+      }
 
       // Paso 4: Determinar si es orgánico
       const isOrganic =
@@ -167,12 +175,16 @@ export const Devnet = ({
           handles[3],
           handles[4],
           handles[5],
-          'Metadata: Example data',
+          publicData,
           inputProof,
         );
 
       await tx.wait();
       console.log('Transaction hash:', tx.hash);
+
+      if (tx.hash) {
+        setNextStep(true);
+      }
     } catch (e) {
       console.error('Encryption or transaction error:', e);
     }
@@ -212,12 +224,12 @@ export const Devnet = ({
       zinc: 0,
       volatileAcidity: 0,
       privateFields: {
-        copper: false,
-        lead: false,
-        cadmium: false,
-        arsenic: false,
-        zinc: false,
-        volatileAcidity: false,
+        copper: true,
+        lead: true,
+        cadmium: true,
+        arsenic: true,
+        zinc: true,
+        volatileAcidity: true,
       },
     },
   });
@@ -232,19 +244,28 @@ export const Devnet = ({
         }
         return prev + 10;
       });
-    }, 1500);
+    }, 30000);
   };
 
   const onSubmit = async (data) => {
+
+      if (nextStep) {
+      await  checkIfOrganic(data.bootleName);
+      } 
+
+    try {
+      simulateEncryption();
+
+      setIsModalOpen(true);
+
+      await saveData(data);
+    } catch (error) {
+      setIsModalOpen(false);
+    }
+
     await checkIfOrganic(data.bootleName);
-
-    return;
-    await saveData(data);
-
-    setIsModalOpen(true);
-    simulateEncryption();
   };
-
+  const [publicData, setPublicData] = useState('');
   return (
     <div className="container mt-10">
       <img src="./logo.png" className="mx-auto mb-5" width={300} alt="" />
@@ -345,7 +366,25 @@ export const Devnet = ({
                           <Checkbox
                             id={`checkbox_${fieldName}`}
                             checked={field.value}
-                            onCheckedChange={field.onChange}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked); // Actualiza el estado del formulario
+                              const fieldValue = `${fieldName}-${form.getValues(fieldName)}`;
+
+                              if (!checked) {
+                                // Si se desactiva la casilla, agrega el campo y valor a la cadena
+                                setPublicData((prev) =>
+                                  prev ? `${prev},${fieldValue}` : fieldValue,
+                                );
+                              } else {
+                                // Si se vuelve a activar, elimina el campo y valor de la cadena
+                                setPublicData((prev) =>
+                                  prev
+                                    .split(',')
+                                    .filter((item) => item !== fieldValue)
+                                    .join(','),
+                                );
+                              }
+                            }}
                           />
                           <label htmlFor={`checkbox_${fieldName}`}>
                             Make this field private?
@@ -361,7 +400,7 @@ export const Devnet = ({
           </div>
 
           <Button className="w-full h-12" type="submit">
-            Submit
+            {nextStep ? 'BioDigitalCert' : 'Submit'}
           </Button>
         </form>
       </FormProvider>
