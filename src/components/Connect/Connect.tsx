@@ -46,7 +46,7 @@ export const Connect: React.FC<{
   const refreshNetwork = useCallback(async () => {
     if (await hasValidNetwork()) {
       setValidNetwork(true);
-      setLoading(true);
+      setLoading(false);
       const load = async () => {
         await createFhevmInstance();
         setLoading(false);
@@ -156,8 +156,9 @@ export const Connect: React.FC<{
         <div className="flex flex-col items-center justify-center gap-10 min-h-[70vh]">
           <img width={300} src="./logo.png" alt="" />
           <p className="text-black max-w-md text-center">
-            With OpenVino, wineries can self-certify their production as organic, carbon-neutral and other attributes
-            through the BioDigital Cert™.
+            With OpenVino, wineries can self-certify their production as
+            organic, carbon-neutral and other attributes through the BioDigital
+            Cert™.
           </p>
           <Button size={'lg'} onClick={connect}>
             Connect your wallet

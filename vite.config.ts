@@ -16,7 +16,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@deployments': path.resolve(__dirname, '../hardhat/deployments'),
+      '@deployments': path.resolve(
+        __dirname,
+        '../biodigital-contract/winery-biodigital/deployments',
+      ),
     },
   },
   server: {
