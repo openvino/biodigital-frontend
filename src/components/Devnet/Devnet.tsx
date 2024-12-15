@@ -70,7 +70,7 @@ export const Devnet = ({
     loadData();
   }, []);
 
-  const [isOrganicState, setIsOrganicState] = useState(true);
+  const [isOrganicState, setIsOrganicState] = useState(false);
 
   const getWineDetails = async (botleName) => {
     const contract = new ethers.Contract(contractAddress, ABI.abi, provider);
