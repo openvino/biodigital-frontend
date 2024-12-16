@@ -255,11 +255,22 @@ export const Devnet = ({
 
   const generateHash = (payload) => {
     console.log('payload', payload);
+    console.log(
+      'data.botella, data.bodega, data.cobre, data.cadmio, data.plomo, data.arsenico, data.zinc',
+      payload.bootleName,
+      payload.winerieName,
+      payload.copper,
+      payload.cadmium,
+      payload.lead,
+      payload.arsenic,
+      payload.zinc,
+    );
 
-    const concatenatedData = `${payload.winerieName}${payload.bootleName}&&${payload.copper}&&${payload.cadmium}&&${payload.lead}&&${payload.arsenic}&&${payload.zinc}`;
+    const concatenatedData = `${payload.bootleName}&${payload.winerieName}&${payload.copper}&${payload.cadmium}&${payload.lead}&${payload.arsenic}&${payload.zinc}`;
+    console.log(concatenatedData);
 
     const hash = CryptoJS.SHA256(concatenatedData).toString(CryptoJS.enc.Hex);
-    console.log(hash);
+    console.log('HASH:', hash);
 
     return `0x${hash}`;
   };
@@ -351,12 +362,12 @@ export const Devnet = ({
     console.log('CONTRACT', contract);
     const result = await contract.match_inv_data(id, hash);
 
-    console.log(`Match result for id ${id} and hash ${hash}:`, !result);
+    console.log(`Match result for id ${id} and hash ${hash}:`, result);
     setMessage(
-      !result ? 'Datos validados por el INV' : 'Datos no validados por el INV',
+      result ? 'Datos validados por el INV' : 'Datos no validados por el INV',
     );
     setIsVerifying(false);
-    if (result) return;
+    if (!result) return;
     if (nextStep) {
       await checkIfOrganic(data.bootleName);
     }
