@@ -21,6 +21,11 @@ import { z } from 'zod';
 import { SquareArrowOutUpRight } from 'lucide-react';
 import { Button } from '../ui/button.tsx';
 import { Progress } from '../ui/progress.tsx';
+import CryptoJS from 'crypto-js';
+import { log } from 'node:console';
+
+const zksyncSepoliaRpcUrl =
+  'https://zksync-sepolia.infura.io/v3/d990f644d02e491dab31256c8303cfda';
 
 const toHexString = (bytes: Uint8Array) =>
   '0x' +
@@ -69,8 +74,9 @@ export const Devnet = ({
 
     loadData();
   }, []);
-
+  const [isVerifying, setIsVerifying] = useState(false);
   const [isOrganicState, setIsOrganicState] = useState(false);
+  const [verificationResult, setVerificationResult] = useState(false);
 
   const getWineDetails = async (botleName) => {
     const contract = new ethers.Contract(contractAddress, ABI.abi, provider);
@@ -247,7 +253,121 @@ export const Devnet = ({
     }, 3000);
   };
 
+  const generateHash = (payload) => {
+    console.log('payload', payload);
+    console.log(
+      'data.botella, data.bodega, data.cobre, data.cadmio, data.plomo, data.arsenico, data.zinc',
+      payload.bootleName,
+      payload.winerieName,
+      payload.copper,
+      payload.cadmium,
+      payload.lead,
+      payload.arsenic,
+      payload.zinc,
+    );
+
+    const concatenatedData = `${payload.bootleName}&${payload.winerieName}&${payload.copper}&${payload.cadmium}&${payload.lead}&${payload.arsenic}&${payload.zinc}`;
+    console.log(concatenatedData);
+
+    const hash = CryptoJS.SHA256(concatenatedData).toString(CryptoJS.enc.Hex);
+    console.log('HASH:', hash);
+
+    return `0x${hash}`;
+  };
+  const [message, setMessage] = useState(
+    'Please ensure that your data matchs with the one provided to de INV',
+  );
+
   const onSubmit = async (data) => {
+    //check INV
+    setIsVerifying(true);
+    const hash = generateHash(data);
+    console.log('HASH', hash);
+    console.log(data.bootleName && '-' && data.winerieName);
+
+    const id = `${data.bootleName}-${data.winerieName}`;
+    console.log('****************************', id);
+
+    console.log(zksyncSepoliaRpcUrl);
+
+    const zksyncProvider = new ethers.JsonRpcProvider(zksyncSepoliaRpcUrl);
+    const invContractAddress = '0x11306D53Ce3dcF9E31Be90bAffE5E76dfBfA16FA';
+    console.log('invContractAddress', invContractAddress);
+
+    console.log('zksyncProvider', zksyncProvider);
+
+    const contractAbi = [
+      {
+        anonymous: false,
+        inputs: [
+          {
+            indexed: true,
+            internalType: 'string',
+            name: 'id',
+            type: 'string',
+          },
+        ],
+        name: 'DataStored',
+        type: 'event',
+      },
+      {
+        inputs: [
+          {
+            internalType: 'string',
+            name: 'id',
+            type: 'string',
+          },
+          {
+            internalType: 'bytes32',
+            name: 'hash',
+            type: 'bytes32',
+          },
+        ],
+        name: 'match_inv_data',
+        outputs: [
+          {
+            internalType: 'bool',
+            name: '',
+            type: 'bool',
+          },
+        ],
+        stateMutability: 'view',
+        type: 'function',
+      },
+      {
+        inputs: [
+          {
+            internalType: 'string',
+            name: 'id',
+            type: 'string',
+          },
+          {
+            internalType: 'bytes32',
+            name: 'hash',
+            type: 'bytes32',
+          },
+        ],
+        name: 'storeData',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+      },
+    ];
+
+    const contract = new ethers.Contract(
+      invContractAddress,
+      contractAbi,
+      zksyncProvider,
+    );
+    console.log('CONTRACT', contract);
+    const result = await contract.match_inv_data(id, hash);
+
+    console.log(`Match result for id ${id} and hash ${hash}:`, result);
+    setMessage(
+      result ? 'Datos validados por el INV' : 'Datos no validados por el INV',
+    );
+    setIsVerifying(false);
+    if (!result) return;
     if (nextStep) {
       await checkIfOrganic(data.bootleName);
     }
@@ -266,176 +386,169 @@ export const Devnet = ({
   };
   const [publicData, setPublicData] = useState('');
 
-
   let bodyContent;
 
-
-  if(!isOrganicState) {
+  if (!isOrganicState) {
     bodyContent = (
       <div className="container mt-10">
-      <img src="./logo.png" className="mx-auto mb-5" width={300} alt="" />
-      <h2 className="flex gap-2 justify-center">
-        Register your winerie on Openvino and get
-        <a
-          className="text-rose-600 flex"
-          href="https://openvino.atlassian.net/wiki/spaces/OPENVINO/pages/186712130/BioDigital+Certification.doc"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Bio Digital Cert <SquareArrowOutUpRight size={10} />
-        </a>
-      </h2>
-      <FormProvider {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8 w-full mt-10 text bg-white rounded-md p-10"
-        >
-          <p className="text-center">
-            Please ensure that the data submitted in this form matches the data
-            provided to the INV.
-          </p>
+        <img src="./logo.png" className="mx-auto mb-5" width={300} alt="" />
+        <h2 className="flex gap-2 justify-center">
+          Register your winerie on Openvino and get
+          <a
+            className="text-rose-600 flex"
+            href="https://openvino.atlassian.net/wiki/spaces/OPENVINO/pages/186712130/BioDigital+Certification.doc"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Bio Digital Cert <SquareArrowOutUpRight size={10} />
+          </a>
+        </h2>
+        <FormProvider {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-8 w-full mt-10 text bg-white rounded-md p-10"
+          >
+            <p className="text-center">{message}</p>
 
-          {/* Form fields in a grid layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-            <FormField
-              control={form.control}
-              name="bootleName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-lg">Bootle name</FormLabel>
-                  <FormDescription> Name of the bootle</FormDescription>
-                  <FormControl>
-                    <Input
-                      className="w-full h-12"
-                      placeholder="MTB18"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="winerieName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-lg">Winerie name</FormLabel>
-                  <FormDescription> Name of the winerie</FormDescription>
-                  <FormControl>
-                    <Input
-                      className="w-full h-12"
-                      placeholder="costaflores"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {[
-              'copper',
-              'lead',
-              'cadmium',
-              'arsenic',
-              'zinc',
-              'volatileAcidity',
-            ].map((fieldName) => (
+            {/* Form fields in a grid layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
               <FormField
-                key={fieldName}
                 control={form.control}
-                name={fieldName}
+                name="bootleName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-lg">
-                      {fieldName} (mg/L)
-                    </FormLabel>
-                    <FormDescription>
-                      Indicates the amount of {fieldName} (encrypted if private)
-                    </FormDescription>
+                    <FormLabel className="text-lg">Bootle name</FormLabel>
+                    <FormDescription> Name of the bootle</FormDescription>
                     <FormControl>
                       <Input
                         className="w-full h-12"
-                        placeholder="Enter (mg/l)"
+                        placeholder="MTB18"
                         {...field}
                       />
                     </FormControl>
                     <FormMessage />
-                    <FormField
-                      control={form.control}
-                      name={`privateFields.${fieldName}`}
-                      render={({ field }) => (
-                        <div className="flex items-center gap-2">
-                          <Checkbox
-                            id={`checkbox_${fieldName}`}
-                            checked={field.value}
-                            onCheckedChange={(checked) => {
-                              field.onChange(checked); // Actualiza el estado del formulario
-                              const fieldValue = `${fieldName}-${form.getValues(fieldName)}`;
-
-                              if (!checked) {
-                                // Si se desactiva la casilla, agrega el campo y valor a la cadena
-                                setPublicData((prev) =>
-                                  prev ? `${prev},${fieldValue}` : fieldValue,
-                                );
-                              } else {
-                                // Si se vuelve a activar, elimina el campo y valor de la cadena
-                                setPublicData((prev) =>
-                                  prev
-                                    .split(',')
-                                    .filter((item) => item !== fieldValue)
-                                    .join(','),
-                                );
-                              }
-                            }}
-                          />
-                          <label htmlFor={`checkbox_${fieldName}`}>
-                            Make this field private?
-                          </label>
-                          <InfoModal />
-                        </div>
-                      )}
-                    />
                   </FormItem>
                 )}
               />
-            ))}
-          </div>
 
-          <Button className="w-full h-12" type="submit">
-            {nextStep ? 'BioDigitalCert' : 'Submit'}
-          </Button>
-        </form>
-      </FormProvider>
+              <FormField
+                control={form.control}
+                name="winerieName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg">Winerie name</FormLabel>
+                    <FormDescription> Name of the winerie</FormDescription>
+                    <FormControl>
+                      <Input
+                        className="w-full h-12"
+                        placeholder="costaflores"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="bg-white p-6 rounded-md shadow-lg w-96">
-            <h2 className="text-xl font-bold mb-4">Encrypting Data...</h2>
-            <Progress value={progress} />
+              {[
+                'copper',
+                'lead',
+                'cadmium',
+                'arsenic',
+                'zinc',
+                'volatileAcidity',
+              ].map((fieldName) => (
+                <FormField
+                  key={fieldName}
+                  control={form.control}
+                  name={fieldName}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg">
+                        {fieldName} (mg/L)
+                      </FormLabel>
+                      <FormDescription>
+                        Indicates the amount of {fieldName} (encrypted if
+                        private)
+                      </FormDescription>
+                      <FormControl>
+                        <Input
+                          className="w-full h-12"
+                          placeholder="Enter (mg/l)"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                      <FormField
+                        control={form.control}
+                        name={`privateFields.${fieldName}`}
+                        render={({ field }) => (
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              id={`checkbox_${fieldName}`}
+                              checked={field.value}
+                              onCheckedChange={(checked) => {
+                                field.onChange(checked); // Actualiza el estado del formulario
+                                const fieldValue = `${fieldName}-${form.getValues(fieldName)}`;
+
+                                if (!checked) {
+                                  // Si se desactiva la casilla, agrega el campo y valor a la cadena
+                                  setPublicData((prev) =>
+                                    prev ? `${prev},${fieldValue}` : fieldValue,
+                                  );
+                                } else {
+                                  // Si se vuelve a activar, elimina el campo y valor de la cadena
+                                  setPublicData((prev) =>
+                                    prev
+                                      .split(',')
+                                      .filter((item) => item !== fieldValue)
+                                      .join(','),
+                                  );
+                                }
+                              }}
+                            />
+                            <label htmlFor={`checkbox_${fieldName}`}>
+                              Make this field private?
+                            </label>
+                            <InfoModal />
+                          </div>
+                        )}
+                      />
+                    </FormItem>
+                  )}
+                />
+              ))}
+            </div>
+
+            <Button className="w-full h-12" type="submit">
+              {nextStep ? 'BioDigitalCert' : 'Submit'}
+            </Button>
+          </form>
+        </FormProvider>
+
+        {isModalOpen && (
+          <div
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="bg-white p-6 rounded-md shadow-lg w-96">
+              <h2 className="text-xl font-bold mb-4">Encrypting Data...</h2>
+              <Progress value={progress} />
+            </div>
           </div>
-        </div>
-      )}
-    </div>
-    )
+        )}
+      </div>
+    );
   }
 
-
-  if(isOrganicState) {	
-    bodyContent = ( <div className='flex justify-center items-center text-xl mt-20 bg-rose-700 min-h-[80vh]'>
-      Your BioDigitalCert is here
-    </div>)
+  if (isOrganicState) {
+    bodyContent = (
+      <div className="flex justify-center items-center text-xl mt-20 bg-rose-700 min-h-[80vh]">
+        Your BioDigitalCert is here
+      </div>
+    );
   }
 
-
-  return (
-  bodyContent
-  )
-
+  return bodyContent;
 };
