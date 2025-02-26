@@ -153,8 +153,8 @@ export const Connect: React.FC<{
   const connectInfos = (
     <div className="Connect__info">
       {!connected && (
-        <div className="flex flex-col items-center justify-center gap-10 min-h-[70vh]">
-          <img width={300} src="./logo.png" alt="" />
+        <div className="flex flex-col items-center justify-center gap-10 min-h-[100vh]">
+          <img width={300} src="./biodigitalLogo.webp" alt="" />
           <p className="text-black max-w-md text-center">
             With OpenVino, wineries can self-certify their production as
             organic, carbon-neutral and other attributes through the BioDigital

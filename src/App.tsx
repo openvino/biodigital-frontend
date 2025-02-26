@@ -3,6 +3,9 @@ import { Devnet } from './components/Devnet';
 import { init } from './fhevmjs';
 import './App.css';
 import { Connect } from './components/Connect';
+import { ToastContainer, toast } from 'react-toastify';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Analysis } from './components/Analysis/Analysis';
 
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -18,19 +21,45 @@ function App() {
   if (!isInitialized) return null;
 
   return (
-    <>
-
-      <Connect>
-        {(account, provider, readOnlyProvider) => (
-          <Devnet
-            account={account}
-            provider={provider}
-            readOnlyProvider={readOnlyProvider}
+    <Router>
+      <div>
+        <Routes>
+          <Route
+            path="/certify"
+            element={
+              <Connect>
+                {(account, provider, readOnlyProvider) => (
+                  <Devnet
+                    account={account}
+                    provider={provider}
+                    readOnlyProvider={readOnlyProvider}
+                  />
+                )}
+              </Connect>
+            }
           />
-        )}
-      </Connect>
-     
-    </>
+
+          <Route
+            path="/chemical-analysis"
+            element={
+              <Connect>
+                {(account, provider, readOnlyProvider) => (
+                  <Analysis
+                    account={account}
+                    provider={provider}
+                    readOnlyProvider={readOnlyProvider}
+                  />
+                )}
+              </Connect>
+            }
+          />
+
+
+        </Routes>
+      </div>
+
+      <ToastContainer />
+    </Router>
   );
 }
 

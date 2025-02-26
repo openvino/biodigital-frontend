@@ -5,8 +5,8 @@ import { build, preview } from 'vite';
     await preview({
       BASE_URL: '/',
       MODE: 'production',
-      DEV: false,
-      PROD: true,
+      DEV: true,
+      PROD: false,
     });
     console.log('Preview server is running...');
     console.log('Listening on http://localhost:4173\n');
