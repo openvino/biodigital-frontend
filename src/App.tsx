@@ -26,7 +26,7 @@ function App() {
       <div>
         <Routes>
           <Route
-            path="/"
+            path="/certify"
             element={
               <Connect>
                 {(account, provider, readOnlyProvider) => (
