@@ -174,14 +174,14 @@ export const Analysis = ({
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            bottleName: 'MTB18',
-            winery: 'Costaflores',
-            copper: 5,
-            lead: 5,
-            cadmium: 5,
-            arsenic: 5,
-            zinc: 5,
-            volatileAcidity: 5,
+            bottleName: '',
+            winery: '',
+            copper: "",
+            lead: "",
+            cadmium: "",
+            arsenic: "",
+            zinc: "",
+            volatileAcidity: "",
             privateFields: {
                 copper: true,
                 lead: true,
@@ -230,8 +230,7 @@ export const Analysis = ({
 
             if (result) {
                 const savedData = await saveData(data);
-
-                await new Promise((resolve) => setTimeout(resolve, 30000)); // Esperar 30 segundos
+                await new Promise((resolve) => setTimeout(resolve, 60000)); // Esperar 30 segundos
 
                 const isOrganic = await checkIfOrganic(data.bottleName);
 
@@ -280,128 +279,142 @@ export const Analysis = ({
             </div>
         )}
 
-
         {!isOrganicState && (
-            <FormProvider {...form}>
-                <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-8 w-full mt-10 text bg-white rounded-md p-10"
-                >
-                    <p className="text-center">{message}</p>
-                    {/* Form fields in a grid layout */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-                        <FormField
-                            control={form.control}
-                            name="bottleName"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-lg">Bottle name</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            className="w-full h-12"
-                                            placeholder="MTB18"
-                                            {...field}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+            <>
+                <img src="./biodigitalLogo.webp" className="mx-auto mb-5" width={300} alt="" />
+                <h2 className="flex gap-2 justify-center">
+                    Register your Winery on OpenVino and get
+                    <a
+                        className="text-rose-600 flex"
+                        href="https://openvino.atlassian.net/wiki/spaces/OPENVINO/pages/186712130/BioDigital+Certification.doc"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        BioDigital Certification <SquareArrowOutUpRight size={10} />
+                    </a>
+                </h2>
+                <FormProvider {...form}>
+                    <form
+                        onSubmit={form.handleSubmit(onSubmit)}
+                        className="space-y-8 w-full mt-10 text bg-white rounded-md p-10"
+                    >
+                        <p className="text-center">{message}</p>
+                        {/* Form fields in a grid layout */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
 
-                        <FormField
-                            control={form.control}
-                            name="winery"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-lg">Winery name</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            className="w-full h-12"
-                                            placeholder="costaflores"
-                                            {...field}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
 
-                        {[
-                            'copper',
-                            'lead',
-                            'cadmium',
-                            'arsenic',
-                            'zinc',
-                            'volatileAcidity',
-                        ].map((fieldName) => (
                             <FormField
-                                key={fieldName}
                                 control={form.control}
-                                name={fieldName}
+                                name="winery"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-lg">
-                                            {fieldName} (mg/L)
-                                        </FormLabel>
-                                        <FormDescription>
-                                            Indicates the amount of {fieldName} (encrypted if
-                                            private)
-                                        </FormDescription>
+                                        <FormLabel className="text-lg">Winery name</FormLabel>
                                         <FormControl>
                                             <Input
                                                 className="w-full h-12"
-                                                placeholder="Enter (mg/l)"
+                                                placeholder="costaflores"
                                                 {...field}
                                             />
                                         </FormControl>
                                         <FormMessage />
-                                        <FormField
-                                            control={form.control}
-                                            name={`privateFields.${fieldName}`}
-                                            render={({ field }) => (
-                                                <div className="flex items-center gap-2">
-                                                    <Checkbox
-                                                        id={`checkbox_${fieldName}`}
-                                                        checked={field.value}
-                                                        onCheckedChange={(checked) => {
-                                                            field.onChange(checked); // Actualiza el estado del formulario
-                                                            const fieldValue = `${fieldName}-${form.getValues(fieldName)}`;
-
-                                                            if (!checked) {
-                                                                // Si se desactiva la casilla, agrega el campo y valor a la cadena
-                                                                setPublicData((prev) =>
-                                                                    prev ? `${prev},${fieldValue}` : fieldValue,
-                                                                );
-                                                            } else {
-                                                                // Si se vuelve a activar, elimina el campo y valor de la cadena
-                                                                setPublicData((prev) =>
-                                                                    prev
-                                                                        .split(',')
-                                                                        .filter((item) => item !== fieldValue)
-                                                                        .join(','),
-                                                                );
-                                                            }
-                                                        }}
-                                                    />
-                                                    <label htmlFor={`checkbox_${fieldName}`}>
-                                                        Make this field private?
-                                                    </label>
-                                                    <InfoModal />
-                                                </div>
-                                            )}
-                                        />
                                     </FormItem>
                                 )}
                             />
-                        ))}
-                    </div>
 
-                    <Button className="w-full h-12" type="submit">
-                        BioDigitalCert
-                    </Button>
+                            <FormField
+                                control={form.control}
+                                name="bottleName"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-lg">Bottle name</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                className="w-full h-12"
+                                                placeholder="MTB18"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
-                </form>
-            </FormProvider>
+                            {[
+                                'copper',
+                                'lead',
+                                'cadmium',
+                                'arsenic',
+                                'zinc',
+                                'volatileAcidity',
+                            ].map((fieldName) => (
+                                <FormField
+                                    key={fieldName}
+                                    control={form.control}
+                                    name={fieldName}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-lg">
+                                                {fieldName} (mg/L)
+                                            </FormLabel>
+                                            <FormDescription>
+                                                Indicates the amount of {fieldName} (encrypted if
+                                                private)
+                                            </FormDescription>
+                                            <FormControl>
+                                                <Input
+                                                    className="w-full h-12"
+                                                    placeholder="Enter (mg/l)"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                            <FormField
+                                                control={form.control}
+                                                name={`privateFields.${fieldName}`}
+                                                render={({ field }) => (
+                                                    <div className="flex items-center gap-2">
+                                                        <Checkbox
+                                                            id={`checkbox_${fieldName}`}
+                                                            checked={field.value}
+                                                            onCheckedChange={(checked) => {
+                                                                field.onChange(checked); // Actualiza el estado del formulario
+                                                                const fieldValue = `${fieldName}-${form.getValues(fieldName)}`;
+
+                                                                if (!checked) {
+                                                                    // Si se desactiva la casilla, agrega el campo y valor a la cadena
+                                                                    setPublicData((prev) =>
+                                                                        prev ? `${prev},${fieldValue}` : fieldValue,
+                                                                    );
+                                                                } else {
+                                                                    // Si se vuelve a activar, elimina el campo y valor de la cadena
+                                                                    setPublicData((prev) =>
+                                                                        prev
+                                                                            .split(',')
+                                                                            .filter((item) => item !== fieldValue)
+                                                                            .join(','),
+                                                                    );
+                                                                }
+                                                            }}
+                                                        />
+                                                        <label htmlFor={`checkbox_${fieldName}`}>
+                                                            Make this field private?
+                                                        </label>
+                                                        <InfoModal />
+                                                    </div>
+                                                )}
+                                            />
+                                        </FormItem>
+                                    )}
+                                />
+                            ))}
+                        </div>
+
+                        <Button className="w-full h-12" type="submit">
+                            BioDigitalCert
+                        </Button>
+
+                    </form>
+                </FormProvider></>
         )}
 
 

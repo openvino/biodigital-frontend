@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SquareArrowOutUpRight } from 'lucide-react';
 import { useForm, Controller } from 'react-hook-form';
@@ -10,7 +11,14 @@ import "leaflet/dist/leaflet.css"
 import Map from '../Map/Map';
 import CustomFormField from './CustomField';
 import { useNavigate } from 'react-router-dom';
-const Form = () => {
+
+interface FormProps {
+  account: any; // Idealmente, reemplaza 'any' por el tipo correcto
+  provider: any;
+  readOnlyProvider: any;
+}
+
+const Form: React.FC<FormProps> = ({ account, provider, readOnlyProvider }: any) => {
 
   const navigate = useNavigate();
   const formSchema = z.object({
@@ -173,12 +181,12 @@ const Form = () => {
               <FormField
                 control={form.control}
                 name="wineryLocation"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <FormLabel className="text-lg">Winery Location</FormLabel>
                     <FormDescription> Where is the winery located?</FormDescription>
                     <FormControl>
-                      <Controller name='wineryLocation' control={form.control} render={({ field }) => (
+                      <Controller name='wineryLocation' control={form.control} render={() => (
                         <Map multiple={false} onLocationSelect={(coords) => {
                           form.setValue('wineryLocation', coords);
                         }} />)} />
@@ -448,7 +456,7 @@ const Form = () => {
               description='lat./lon. source, provide sat image of canal source. if shared, describe how this is not contaminated'
               type='textarea'
             />
-            
+
             <div className='flex justify-center'>
               <Button onClick={handleContinueWineAnalysis} className=" h-12" type="button">
                 Continue to wine analysis

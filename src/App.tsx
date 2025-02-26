@@ -1,9 +1,10 @@
+//@ts-nocheck
 import { useEffect, useState } from 'react';
 import { Devnet } from './components/Devnet';
 import { init } from './fhevmjs';
 import './App.css';
 import { Connect } from './components/Connect';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer} from 'react-toastify';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Analysis } from './components/Analysis/Analysis';
 

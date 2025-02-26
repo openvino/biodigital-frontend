@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import{ useState } from "react";
 //@ts-ignore 
 import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
-import { MapPin } from "lucide-react";
 
 export default function Map({ onLocationSelect, multiple = false }: { onLocationSelect: (coords: any) => void, multiple?: boolean }) {
 

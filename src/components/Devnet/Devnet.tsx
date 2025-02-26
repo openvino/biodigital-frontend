@@ -1,8 +1,6 @@
 import './Devnet.css';
 import { Eip1193Provider, Provider } from 'ethers';
 import Form from '../Form/Form.tsx';
-import { Analysis } from '../Analysis/Analysis.tsx';
-
 export type DevnetProps = {
   account: string;
   provider: Eip1193Provider;
