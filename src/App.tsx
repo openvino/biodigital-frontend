@@ -39,7 +39,6 @@ function App() {
               </Connect>
             }
           />
-
           <Route
             path="/chemical-analysis"
             element={
@@ -54,8 +53,6 @@ function App() {
               </Connect>
             }
           />
-
-
         </Routes>
       </div>
 
