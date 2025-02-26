@@ -6,6 +6,7 @@ import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/chemical-analysis/',
   assetsInclude: ['**/*.bin', '**/*.wasm'],
   plugins: [react(), nodePolyfills(), ],
   define: {
